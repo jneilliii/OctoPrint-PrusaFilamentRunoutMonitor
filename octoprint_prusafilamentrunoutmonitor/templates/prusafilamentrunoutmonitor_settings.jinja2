@@ -1,0 +1,16 @@
+<h4>Prusa Filament Runout <small>{{ _('Version') }} {{ plugin_prusafilamentrunoutmonitor_plugin_version }}</small></h4>
+
+<form class="form-vertical" id="settings_plugin_prusafilamentrunoutmonitor_form">
+    <div class="control-group">
+        <label class="control-label">{{ _('X Position') }}</label>
+        <div class="controls">
+            <input type="text" data-bind="value: settingsViewModel.settings.plugins.prusafilamentrunoutmonitor.x_position">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">{{ _('Y Position') }}</label>
+        <div class="controls">
+            <input type="text" data-bind="value: settingsViewModel.settings.plugins.prusafilamentrunoutmonitor.y_position">
+        </div>
+    </div>
+</form>
