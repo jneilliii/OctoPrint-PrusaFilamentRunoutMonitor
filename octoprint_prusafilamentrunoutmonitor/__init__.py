@@ -39,14 +39,14 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
 
     # ~~ GCode received hook
     def process_gcode(self, comm, line, *args, **kwargs):
-        if line == "echo:busy: processing" or self._processing and self._printer.is_printing():
-            if line == "echo:busy: processing":
+        if line.strip() == "echo:busy: processing" or self._processing and self._printer.is_printing():
+            if line.strip() == "echo:busy: processing":
                 self._logger.debug("Enabling position monitor")
                 self._processing = True
             elif self._processing:
                 x_position = self._settings.get(["x_position"])
                 y_position = self._settings.get(["y_position"])
-                if line.startswith(f"X:{x_position} Y:{y_position}"):
+                if line.strip().startswith(f"X:{x_position} Y:{y_position}"):
                     self._logger.debug("Pausing print")
                     self._printer.pause_print()
                     self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': True})
@@ -85,6 +85,6 @@ def __plugin_load__():
 
     global __plugin_hooks__
     __plugin_hooks__ = {
-        "octoprint.comm.protocol.gcode.received": __plugin_implementation__.process_gcode,
+        "octoprint.comm.protocol.gcode.received": (__plugin_implementation__.process_gcode, 1),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
     }
