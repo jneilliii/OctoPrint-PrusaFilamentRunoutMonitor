@@ -16,7 +16,7 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
     def get_settings_defaults(self):
         return {
             "x_position": "241.00",
-            "y_position": "-3.00"
+            "y_position": "-3.00",
         }
 
     # ~~ AssetPlugin mixin
@@ -48,12 +48,12 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
                 x_position = self._settings.get(["x_position"])
                 y_position = self._settings.get(["y_position"])
                 if line.strip().startswith(f"X:{x_position} Y:{y_position}"):
-                    self._logger.debug("Pausing print")
-                    self._printer.pause_print()
+                    self._logger.debug("Parked position matched")
                     self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': True})
                     self._processing = False
+                    return "// action:paused"
                 else:
-                    self._logger.debug(f"unmatched: \"X:{x_position} Y:{y_position}\" to \"{line}\"")
+                    self._logger.debug(f"Parked position unmatched: \"X:{x_position} Y:{y_position}\" to \"{line}\"")
 
         return line
 
