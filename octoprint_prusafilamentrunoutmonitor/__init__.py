@@ -35,6 +35,7 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
 
     def on_event(self, event, payload):
         if event in [Events.PRINT_STARTED, Events.PRINT_DONE, Events.PRINT_CANCELLED, Events.PRINT_RESUMED]:
+            self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': False})
             self._processing = False
 
     # ~~ GCode received hook

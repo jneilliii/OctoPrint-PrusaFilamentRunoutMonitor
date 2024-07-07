@@ -4,25 +4,31 @@
  * Author: jneilliii
  * License: AGPLv3
  */
-$(function() {
+$(function () {
     function PrusafilamentrunoutmonitorViewModel(parameters) {
         var self = this;
         self.settingsViewModel = parameters[0];
+        self.popup = undefined;
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
-			if (plugin !== "prusafilamentrunoutmonitor") {
-				return;
-			}
+            if (plugin !== "prusafilamentrunoutmonitor") {
+                return;
+            }
 
             if (data.filamentrunout) {
-                new PNotify({
-					title: 'Prusa Filament Runout',
-					text: gettext('Filament runout has occurred, please replace filament and resume printing when ready.'),
+                self.popup = new PNotify({
+                    title: 'Prusa Filament Runout',
+                    text: gettext('Filament runout has occurred, please replace filament and resume printing when ready.'),
                     type: 'info',
-					hide: false
-				});
+                    hide: false
+                });
+            } else {
+                if (typeof self.popup !== "undefined") {
+                    self.popup.remove();
+                    self.popup = undefined;
+                }
             }
-        }
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push({
