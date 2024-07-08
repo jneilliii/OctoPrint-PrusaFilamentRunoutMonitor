@@ -49,8 +49,21 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
                 y_position = self._settings.get(["y_position"])
                 if line.strip().startswith(f"X:{x_position} Y:{y_position}"):
                     self._logger.debug("Parked position matched")
+                    fileposition = comm.getFilePosition() if comm else None
+                    progress = comm.getPrintProgress() if comm else None
+                    job_data = self._printer.get_current_job()
+
+                    payload = job_data.get("file")
+                    payload["owner"] = ""
+                    payload["user"] = job_data.get("user")
+                    payload["fileposition"] = fileposition
+                    payload["progress"] = progress
+
+                    self._event_bus.fire(Events.PRINT_PAUSED, payload)
+
                     self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': True})
                     self._processing = False
+
                     return "// action:paused"
                 else:
                     self._logger.debug(f"Parked position unmatched: \"X:{x_position} Y:{y_position}\" to \"{line}\"")
