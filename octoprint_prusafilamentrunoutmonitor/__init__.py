@@ -17,6 +17,7 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
         return {
             "x_position": "241.00",
             "y_position": "-3.00",
+            "pause_print": False
         }
 
     # ~~ AssetPlugin mixin
@@ -40,10 +41,16 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
 
     # ~~ GCode received hook
     def process_gcode(self, comm, line, *args, **kwargs):
-        if line.strip() == "echo:busy: processing" or self._processing and self._printer.is_printing():
+        if line.strip() == "echo:busy: processing" or self._processing:
             if line.strip() == "echo:busy: processing":
                 self._logger.debug("Enabling position monitor")
                 self._processing = True
+            # elif line.strip() == "ok" and self._printer.is_paused():
+            #     self._logger.debug("Filament change completed on printer.")
+            #     self._processing = False
+            #     if self._settings.get_boolean(["pause_print"]):
+            #         self._logger.debug("Resuming print job after filament change.")
+            #         self._printer.resume_print()
             elif self._processing:
                 x_position = self._settings.get(["x_position"])
                 y_position = self._settings.get(["y_position"])
@@ -59,12 +66,16 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
                     payload["fileposition"] = fileposition
                     payload["progress"] = progress
 
-                    self._event_bus.fire(Events.PRINT_PAUSED, payload)
-
                     self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': True})
                     self._processing = False
 
-                    return "// action:paused"
+                    if self._settings.get_boolean(["pause_print"]):
+                        self._logger.debug("Faking acknowledgement and returning pause action.")
+                        self._printer.fake_ack()
+                        return "// action:paused"
+                    else:
+                        self._logger.debug("Firing pause event in lieu of pausing.")
+                        self._event_bus.fire(Events.PRINT_PAUSED, payload)
                 else:
                     self._logger.debug(f"Parked position unmatched: \"X:{x_position} Y:{y_position}\" to \"{line}\"")
 
