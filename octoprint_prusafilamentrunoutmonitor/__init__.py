@@ -1,4 +1,6 @@
 # coding=utf-8
+import time
+
 import octoprint.plugin
 from octoprint.events import Events
 
@@ -16,8 +18,7 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
     def get_settings_defaults(self):
         return {
             "x_position": "241.00",
-            "y_position": "-3.00",
-            "pause_print": False
+            "y_position": "-3.00"
         }
 
     # ~~ AssetPlugin mixin
@@ -41,44 +42,33 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
 
     # ~~ GCode received hook
     def process_gcode(self, comm, line, *args, **kwargs):
-        if line.strip() == "echo:busy: processing" or self._processing and self._printer.is_printing():
-            if line.strip() == "echo:busy: processing":
-                self._logger.debug("Enabling position monitor")
-                self._processing = True
-            elif self._processing:
-                x_position = self._settings.get(["x_position"])
-                y_position = self._settings.get(["y_position"])
-                if line.strip() == "ok":
-                    self._logger.debug("Filament change completed on printer.")
-                    self._processing = False
-                    self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': False})
-                    if self._settings.get_boolean(["pause_print"]) and self._printer.is_paused() or self._printer.is_pausing():
-                        self._logger.debug("Resuming print job after filament change.")
-                        self._printer.resume_print()
-                elif line.strip().startswith(f"X:{x_position} Y:{y_position}"):
-                    self._logger.debug("Parked position matched")
+        # handle starting position monitoring
+        if line.strip() == "echo:busy: processing" and self._printer.is_printing() and not self._processing:
+            self._logger.debug("Enabling position monitor")
+            self._processing = True
+        # handle stopping position monitoring
+        elif self._processing and line.strip() == "ok":
+            self._logger.debug("Received ok while monitoring, disabling position monitor.")
+            self._processing = False
+            self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': False})
+        # check for position report match
+        elif self._processing and line.strip().startswith(f"X:{self._settings.get(['x_position'])} Y:{self._settings.get(['y_position'])}"):
+            self._logger.debug("Parked position matched")
 
-                    self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': True})
-                    self._processing = False
+            fileposition = comm.getFilePosition() if comm else None
+            progress = comm.getPrintProgress() if comm else None
+            job_data = self._printer.get_current_job()
 
-                    if self._settings.get_boolean(["pause_print"]):
-                        self._logger.debug("Faking acknowledgement and returning paused action.")
-                        self._printer.fake_ack()
-                        return "// action:paused"
-                    else:
-                        fileposition = comm.getFilePosition() if comm else None
-                        progress = comm.getPrintProgress() if comm else None
-                        job_data = self._printer.get_current_job()
+            payload = job_data.get("file")
+            payload["owner"] = ""
+            payload["user"] = job_data.get("user")
+            payload["fileposition"] = fileposition
+            payload["progress"] = progress
+            self._logger.debug("Firing pause on event bus.")
+            self._event_bus.fire(Events.PRINT_PAUSED, payload)
 
-                        payload = job_data.get("file")
-                        payload["owner"] = ""
-                        payload["user"] = job_data.get("user")
-                        payload["fileposition"] = fileposition
-                        payload["progress"] = progress
-                        self._logger.debug("Firing pause event in lieu of pausing.")
-                        self._event_bus.fire(Events.PRINT_PAUSED, payload)
-                else:
-                    self._logger.debug(f"Parked position unmatched: \"X:{x_position} Y:{y_position}\" to \"{line}\"")
+            self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': True})
+            self._processing = False
 
         return line
 

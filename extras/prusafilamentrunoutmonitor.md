@@ -3,7 +3,7 @@ layout: plugin
 
 id: prusafilamentrunoutmonitor
 title: Prusa Filament Runout
-description: Plugin monitors Prusa Buddy firmware's (MK4, Mini, XL, MK3.9) serial communications for specific conditions that indicate a filament runout on the printer and pauses the print job in OctoPrint.
+description: Plugin monitors Prusa Buddy firmware's (MK4, Mini, XL, MK3.9) serial communications for specific conditions that indicate a filament runout on the printer and fires a pause on the event bus of OctoPrint.
 authors:
 - jneilliii
 license: AGPLv3
@@ -34,22 +34,22 @@ attributes:
 ---
 # Prusa Filament Runout
 
-**This plugin exists thanks to generous funding by [Kaizen Smart Data Ltd.]()**
+**This plugin exists thanks to generous funding by [Kaizen Smart Data Ltd.](https://kaizensmartdata.com/)**
 
-Plugin monitors Prusa Buddy firmware (MK4, Mini, XL, MK3.9) serial communications for specific conditions that indicate
-a filament runout on the printer and pauses the print job in OctoPrint.
+Plugin monitors Prusa Buddy firmware's (MK4, Mini, XL, MK3.9) serial communications for specific conditions that indicate
+a filament runout on the printer and fires a pause on the event bus of OctoPrint.
+
+It was programmed to work with OctoText to send an alert to the user, typically an SMS or email, that the printer is
+paused waiting for a filament change; however, it will work with any plugin that reacts to the pause event in OctoPrint.
 
 ![popup screenshot](/assets/img/plugins/prusafilamentrunoutmonitor/screenshot_popup.png)
 
-**NOTE:** This plugin is not required for filament runout to function on these printers. It was made to allow other
-plugins like [OctoText](https://plugins.octoprint.org/plugins/OctoText/) to be aware of when a filament runout occurs by
-utilizing OctoPrint's pause functionality. This allows other plugins to notify on the pause event, which is not possible
-with Prusa's current firmware implementation of filament runout.
+**NOTE:** If Prusa updates their Buddy firmware to work correctly with Octoprint, this plugin will no longer be needed.
 
 ## Settings
 
 Configure the X and Y position for the parked position during filament runout in the plugin's settings. To determine what
-the exact position is start a sacrificial print and cut the filament while looking at the terminal tab of OctoPrint.
+the exact position is, start a sacrificial print and cut the filament while looking at the terminal tab of OctoPrint.
 You should see something reported from the printer like this:
 
 ```
