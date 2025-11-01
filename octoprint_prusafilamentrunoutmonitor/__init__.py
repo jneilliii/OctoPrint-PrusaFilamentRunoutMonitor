@@ -15,10 +15,20 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
 
     # ~~ SettingsPlugin mixin
 
+    def get_settings_version(self):
+        return 1
+
+    def on_settings_migrate(self, target, current):
+        if current is None or current < 1:
+            self._settings.set(["x_positions"], [self._settings.get(["x_position"])])
+            self._settings.set(["y_positions"], [self._settings.get(["y_position"])])
+
     def get_settings_defaults(self):
         return {
             "x_position": "241.00",
-            "y_position": "-3.00"
+            "y_position": "-3.00",
+            "x_positions": ["241.00"],
+            "y_positions": ["-3.00"]
         }
 
     # ~~ AssetPlugin mixin
@@ -52,7 +62,7 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
             self._processing = False
             self._plugin_manager.send_plugin_message(self._identifier, {'filamentrunout': False})
         # check for position report match
-        elif self._processing and line.strip().startswith(f"X:{self._settings.get(['x_position'])} Y:{self._settings.get(['y_position'])}"):
+        elif self._processing and any(any(line.strip().startswith(f"X:{x} Y:{y}") for y in self._settings.get(['y_positions'])) for x in self._settings.get(['x_positions'])):
             self._logger.debug("Parked position matched")
 
             fileposition = comm.getFilePosition() if comm else None

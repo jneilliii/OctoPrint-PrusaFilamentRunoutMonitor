@@ -1,16 +1,42 @@
 <h4>Prusa Filament Runout <small>{{ _('Version') }} {{ plugin_prusafilamentrunoutmonitor_plugin_version }}</small></h4>
 
 <form class="form-vertical" id="settings_plugin_prusafilamentrunoutmonitor_form">
-    <div class="control-group">
-        <label class="control-label">{{ _('X Position') }}</label>
-        <div class="controls">
-            <input type="text" data-bind="value: settingsViewModel.settings.plugins.prusafilamentrunoutmonitor.x_position">
+    <div class="row-fluid">
+        <div class="control-group span4" id="pfrm_x_position">
+            <label class="control-label">{{ _('X Position') }}</label>
+            <div class="controls">
+                <input type="text" value="">
+            </div>
+        </div>
+        <div class="control-group span4" id="pfrm_y_position">
+            <label class="control-label">{{ _('Y Position') }}</label>
+            <div class="controls">
+                <input type="text" value="">
+            </div>
+        </div>
+        <div class="control-group span4">
+            <label class="control-label">{{ _('Actions') }}</label>
+            <div class="controls btn-group">
+                <button class="btn btn-primary" data-bind="click: add_position"><i class="fas fa-plus"></i></button>
+            </div>
         </div>
     </div>
-    <div class="control-group">
-        <label class="control-label">{{ _('Y Position') }}</label>
-        <div class="controls">
-            <input type="text" data-bind="value: settingsViewModel.settings.plugins.prusafilamentrunoutmonitor.y_position">
+
+    <div class="row-fluid">
+        <div class="span4" data-bind="foreach: settingsViewModel.settings.plugins.prusafilamentrunoutmonitor.x_positions">
+            <div class="row-fluid">
+                <span class="input-block-level" data-bind="text: $data"></span>
+            </div>
+        </div>
+        <div class="span4" data-bind="foreach: settingsViewModel.settings.plugins.prusafilamentrunoutmonitor.y_positions">
+            <div class="row-fluid">
+                <span class="input-block-level" data-bind="text: $data"></span>
+            </div>
+        </div>
+        <div class="span4" data-bind="foreach: settingsViewModel.settings.plugins.prusafilamentrunoutmonitor.x_positions">
+            <div class="row-fluid">
+                <button class="btn btn-danger" data-bind="click: function() {$root.remove_position($index())}"><i class="fas fa-trash-alt"></i></button>
+            </div>
         </div>
     </div>
 </form>
