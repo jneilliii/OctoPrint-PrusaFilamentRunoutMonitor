@@ -25,10 +25,10 @@ class PrusafilamentrunoutmonitorPlugin(octoprint.plugin.SettingsPlugin,
 
     def get_settings_defaults(self):
         return {
-            "x_position": "241.00",
-            "y_position": "-3.00",
-            "x_positions": ["241.00"],
-            "y_positions": ["-3.00"]
+            "x_position": "42.00",
+            "y_position": "-7.00",
+            "x_positions": ["42.00"],
+            "y_positions": ["-7.00"]
         }
 
     # ~~ AssetPlugin mixin
