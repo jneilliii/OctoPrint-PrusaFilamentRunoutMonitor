@@ -1,5 +1,19 @@
 <h4>Prusa Filament Runout <small>{{ _('Version') }} {{ plugin_prusafilamentrunoutmonitor_plugin_version }}</small></h4>
 
+<p><strong>{{ _('How to set parked X/Y:') }}</strong>
+{{ _('Start a sacrificial print and cut the filament while watching Terminal in OctoPrint. You should see lines like:') }}
+</p>
+<pre>echo:busy: processing
+X:241.00 Y:-3.00 Z:38.90 E:89.28 Count X:24099 Y:-300 Z:15559</pre>
+<p>
+{{ _('Use the X and Y values from the second line (e.g.') }} <code>241.00</code> {{ _('and') }} <code>-3.00</code>{{ _(').') }}
+<br><strong>{{ _('Important:') }}</strong> {{ _('enter the full numeric strings exactly as reported (e.g. enter') }} <code>241.00</code>{{ _(', not') }} <code>241</code>{{ _(').') }}
+</p>
+
+<p>
+  {{ _('Note: Prusa firmware changed the default park location in a later release; it is now X=42.00, Y=-7.00 instead of X=241.00, Y=-3.00. Always copy the exact values shown in Terminal for your printer/firmware. This plugin has been updated to use the new values, but they may change in the future.') }}
+</p>
+
 <form class="form-vertical" id="settings_plugin_prusafilamentrunoutmonitor_form">
     <div class="row-fluid">
         <div class="control-group span4" id="pfrm_x_position">
